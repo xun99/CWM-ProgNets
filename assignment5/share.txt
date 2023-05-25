@@ -1,0 +1,7 @@
+John's Interface Name: enx0c37965f8a23
+John's Interface IP ADDRESS: 192.168.10.1
+John's MAC ADDRESS: 0c:37:96:5f:8a:23
+
+Hu Xun's Interface Name: enx0c37965f89ec
+Hu Xun's Interface IP ADDRESS: 169.254.46.161
+Hu Xun's MAC ADDRESS: 0c:37:96:5f:89:ec
