@@ -9,6 +9,7 @@
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
+const bit<16> TYPE_AUTOTRADER = ;
 
 header ethernet_t {
     macAddr_t dstAddr;
@@ -16,9 +17,13 @@ header ethernet_t {
     bit<16>   etherType;
 }
 
-header ipv4_t {
+/*header ipv4_t {
     ip4Addr_t dstAddr;
     ip4Addr_t scrAddr;
+}*/
+
+header autotrader_t {
+    bit<32> order;
 }
 
 struct metadata {
@@ -27,8 +32,11 @@ struct metadata {
 
 struct headers {
     ethernet_t   ethernet;
-    ipv4_t       ipv4;
+    /*ipv4_t       ipv4;*/
+    autotrader_t autotrader;
 }
+
+register<bit<32>>(1) R1;
 
 /*************************************************************************
 *********************** P A R S E R  ***********************************
@@ -41,7 +49,15 @@ parser MyParser(packet_in packet,
 
     state start {
         packet.extract(hdr.ethernet);
-        transition accept;
+        transition select(hdr.ethernet.etherType) {
+            TYPE_AUTOTRADER: parse_autotrader;
+            default: accept;
+        }
+    state parse_autotrader {
+    	packet.extract(hdr.autotrader);
+    	transition accept;
+    }
+    
     }
 
 }
@@ -80,23 +96,26 @@ control MyIngress(inout headers hdr,
         mark_to_drop(standard_metadata);
     }
     
-    table src_mac_drop {
-        key = {
-            hdr.ethernet.srcAddr: exact;
-        }
-        actions = {
-            swap_mac_addresses;
-            drop;
-            NoAction;
-        }
-        size = 1024;
-        default_action = swap_mac_addresses();
+    action buy_at_asking_price() {
+    	temp = temp + 1;
+    }
+    
+    action sell_at_bidding_price() {
+        temp = temp - 1;
     }
     
     apply {
-        if (hdr.ethernet.isValid()) {
-            src_mac_drop.apply();
+    	bit<32> temp;
+    	R1.read(temp,0);
+        if () {
+            if (hdr.autotrader.order == "bid") {
+            	sell_at_bidding_price();
+            }
+            if (hdr.autotrader.order == "ask") {
+                buy_at_asking_price();
+            }
         }
+        R1.write(0,temp);
     }
 }
        
